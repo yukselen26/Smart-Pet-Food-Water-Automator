@@ -19,7 +19,7 @@ jobs:
         certutil -hashfile yourfile.bin CRC32 > crc32_output.txt
         $crc_value = Get-Content crc32_output.txt | Select-String -Pattern "^\w{8}" | ForEach-Object { $_.Matches[0].Value }
         echo "CRC32 Value: $crc_value"
-        echo "crc_var=$crc_value" >> $GITHUB_ENV
+        echo "crc_var=$crc_value" >> $env:GITHUB_ENV
 
     - name: Display CRC32 from environment variable
       run: echo "CRC32 Value from env: ${{ env.crc_var }}"
