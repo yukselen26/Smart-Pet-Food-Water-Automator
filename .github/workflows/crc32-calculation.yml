@@ -1,0 +1,34 @@
+name: Calculate CRC32 and Save
+
+on:
+  push:
+    paths:
+      - yourfile.bin
+
+jobs:
+  calculate-crc:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Calculate CRC32
+      id: crc32
+      run: |
+        certutil -hashfile yourfile.bin CRC32 > crc32_output.txt
+        findstr /v /c:"hash" crc32_output.txt > crc32.txt
+
+    - name: Display CRC32
+      run: |
+        type crc32.txt
+
+    - name: Commit and Push CRC32
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add crc32.txt
+        git commit -m "Add CRC32 for the new firmware"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
