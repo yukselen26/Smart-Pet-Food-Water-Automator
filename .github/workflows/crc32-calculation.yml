@@ -17,14 +17,16 @@ jobs:
       id: crc32
       run: |
         certutil -hashfile yourfile.bin CRC32 > crc32_output.txt
-        findstr /v /c:"hash" crc32_output.txt > crc32.txt
+        $crc_value = Get-Content crc32_output.txt | Select-String -Pattern "^\w{8}" | ForEach-Object { $_.Matches[0].Value }
+        echo "CRC32 Value: $crc_value"
+        echo "crc_var=$crc_value" >> $GITHUB_ENV
 
-    - name: Display CRC32
-      run: |
-        type crc32.txt
+    - name: Display CRC32 from environment variable
+      run: echo "CRC32 Value from env: ${{ env.crc_var }}"
 
     - name: Commit and Push CRC32
       run: |
+        echo ${{ env.crc_var }} > crc32.txt
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add crc32.txt
