@@ -7,26 +7,29 @@ on:
 
 jobs:
   calculate-crc:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Install required packages
+      run: sudo apt-get install -y libarchive-zip-perl
+
     - name: Calculate CRC32
       id: crc32
       run: |
-        certutil -hashfile yourfile.bin CRC32 > crc32_output.txt
-        $crc_value = Get-Content crc32_output.txt | Select-String -Pattern "^\w{8}" | ForEach-Object { $_.Matches[0].Value }
+        crc_value=$(crc32 yourfile.bin)
         echo "CRC32 Value: $crc_value"
-        echo "crc_var=$crc_value" >> $env:GITHUB_ENV
+        echo "crc_var=$crc_value" >> $GITHUB_ENV
 
     - name: Display CRC32 from environment variable
-      run: echo "CRC32 Value from env: ${{ env.crc_var }}"
+      run: |
+        echo "CRC32 Value from env: ${crc_var}"
 
     - name: Commit and Push CRC32
       run: |
-        echo ${{ env.crc_var }} > crc32.txt
+        echo "${crc_var}" > crc32.txt
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add crc32.txt
